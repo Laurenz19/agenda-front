@@ -4,8 +4,8 @@
 
         <div v-if="entretiens.length">
             <div class="recherche">
-                <vs-input type="time" v-model="heure" label="Heure" @keypress.enter="sortAgenda"/>
-                <vs-input type="date" v-model="date" label="Date" @keypress.enter="sortAgenda"/>
+                <vs-input type="time" v-model="heure" label="Heure" @change="sortAgenda"/>
+                <vs-input type="date" v-model="date" label="Date" @change="sortAgenda"/>
             </div>
             <ul>
             <li v-for="entretien in entretiens" :key="entretien.id">
@@ -13,7 +13,7 @@
                     calendar_today
                 </span>
                 <div class="agenda-content">
-                    <h4>Entretien le {{moment(entretien.date).format("MM-DD-YYYY")}} à {{entretien.heure}}</h4>
+                    <h4>Entretien le {{moment(entretien.date).format("DD-MM-YYYY")}} à {{entretien.heure}}</h4>
                      <p>Lieu: {{entretien.lieu}}</p> 
                      <p> Job: "{{entretien.travail.description}}", Candidat: {{entretien.candidat.nomComplet}}</p>
                 </div>
@@ -64,8 +64,12 @@ export default {
                   read(`entretiens?date=${moment(this.date).format("yyyy-MM-DD")}&heure=${this.heure}`, (data)=>{
                         this.$store.dispatch("setEntretiens", data);
                  })
+            }else if(this.heure == "" && this.date == ""){
+                read(`entretiens`, (data)=>{
+                        this.$store.dispatch("setEntretiens", data);
+                })
             }else{
-                if(this.heure != ""){
+                 if(this.heure != ""){
                       read(`entretiens?heure=${this.heure}`, (data)=>{
                         this.$store.dispatch("setEntretiens", data);
                     })
@@ -77,6 +81,7 @@ export default {
                     })
                 }
             }
+          
         }
     }
 }
