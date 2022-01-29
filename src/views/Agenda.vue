@@ -1,7 +1,12 @@
 <template>
     <div class="agenda">
         <h1>Agenda</h1>
+
         <div v-if="entretiens.length">
+            <div class="recherche">
+                <vs-input type="time" v-model="heure" label="Heure" @keypress.enter="sortAgenda"/>
+                <vs-input type="date" v-model="date" label="Date" @keypress.enter="sortAgenda"/>
+            </div>
             <ul>
             <li v-for="entretien in entretiens" :key="entretien.id">
                 <span class="material-icons">
@@ -48,7 +53,30 @@ export default {
   },
     data(){
         return{
-            moment: moment
+            moment: moment,
+            heure:"",
+            date:""
+        }
+    },
+    methods:{
+        sortAgenda:function(){
+            if(this.heure != "" && this.date != ""){
+                  read(`entretiens?date=${moment(this.date).format("yyyy-MM-DD")}&heure=${this.heure}`, (data)=>{
+                        this.$store.dispatch("setEntretiens", data);
+                 })
+            }else{
+                if(this.heure != ""){
+                      read(`entretiens?heure=${this.heure}`, (data)=>{
+                        this.$store.dispatch("setEntretiens", data);
+                    })
+                }
+
+                if(this.date != ""){
+                      read(`entretiens?date=${moment(this.date).format("yyyy-MM-DD")}`, (data)=>{
+                        this.$store.dispatch("setEntretiens", data);
+                    })
+                }
+            }
         }
     }
 }
@@ -80,4 +108,9 @@ export default {
      top:10px; 
      left: 25px;
  } 
+ .recherche{
+    position: fixed;
+    left: -0.5px;
+    margin:50px
+  }
 </style>

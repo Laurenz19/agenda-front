@@ -170,6 +170,10 @@ export default {
           if(this.$refs.btn_submit.$el.innerText == "Ajouter"){
              create("candidats", candidat, (response)=>{
               console.log(response.data)
+               this.closePopup()
+               read("candidats", (data)=>{
+                this.$store.dispatch("setCandidats", data);
+              })
             })
           }
 
@@ -185,6 +189,7 @@ export default {
             console.log(candidat)
       },
       addCompetence:function(){
+       console.log(this.comps)
        this.comps.push(this.competence)
        this.competence = ""
       },
@@ -213,7 +218,7 @@ export default {
               "nomComplet":"",
               "dateNais":"",
               "adresse": "",
-              "competences":"",
+              "competences":[],
               "contact":"",
               "email":""
           })
@@ -235,7 +240,7 @@ export default {
               "nomComplet":"",
               "dateNais":"",
               "adresse": "",
-              "competences":"",
+              "competences":[],
               "contact":"",
               "email":""
           }
