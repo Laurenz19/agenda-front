@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    <vs-table :notSpacer="true" pagination max-items="5" search :data="candidats" vs-w="8">
+    <vs-table :notSpacer="true" pagination max-items="6" search :data="candidats" vs-w="8">
       <template slot="header">
         <div class="popup">
            <app-pop-up :title="popup_title" :active="activePopup" @open="initPopup" :showbtn="true" :hideCloseBtn="hideCloseBtn">
@@ -10,16 +10,20 @@
                     </vs-alert>
                     <div class="inputs">
                       <vs-input class="inputx" label-placeholder="Nom Complet" v-model="nom"/>
-                      <vs-input class="inputx" label-placeholder="Date de naissance" v-model="dateNais"/>
+                      <vs-input class="inputx"  type="date" label-placeholder="Date de naissance" v-model="dateNais"/>
                       <vs-input class="inputx" label-placeholder="Email" v-model="email"/>
                       <vs-input class="inputx" label-placeholder="Tel" v-model="contact"/>
                       <vs-input class="inputx" label-placeholder="Adresse" v-model="adresse"/>
-                      <vs-input class="inputx" label-placeholder="Compétences" v-model="competence"/>
-                      <div class="competences_list"></div>
+                      <vs-input class="inputx" label-placeholder="Compétences" v-model="competence" @keypress.enter="addCompetence"/>
+                      <div class="competences_list">
+                        <span v-for="cp in comps" :key="cp">
+                          {{cp}}
+                        </span>
+                      </div>
                     </div>
                     <div class="submit">
+                         <vs-button type="gradient" color="danger" @click="closePopup">Annuler</vs-button>
                         <vs-button ref="btn_q" type="gradient" @click="handleSubmitData">Ajouter</vs-button>
-                        <vs-button type="gradient" color="danger" @click="closePopup">Annuler</vs-button>
                     </div>
                 </template>
           </app-pop-up>
@@ -63,13 +67,13 @@
         </vs-td>
       </template>
       <template slot-scope="{data}">
-        <vs-tr :key="data[indextr].id" v-for="(tr, indextr) in data" >
+        <vs-tr class="tr" :key="data[indextr].id" v-for="(tr, indextr) in data" >
           <vs-td :data="data[indextr].nomComplet">
             {{data[indextr].nomComplet}}
           </vs-td>
 
           <vs-td :data="data[indextr].dateNais">
-            {{data[indextr].dateNais}}
+            {{moment(data[indextr].dateNais).format("DD-MM-YYYY")}}
           </vs-td>
           <vs-td :data="data[indextr].email">
             {{data[indextr].email}}
@@ -77,11 +81,11 @@
            <vs-td :data="data[indextr].contact">
             {{data[indextr].contact}}
           </vs-td>
-           <vs-td :data="data[indextr].email">
-            {{data[indextr].email}}
-          </vs-td>
            <vs-td :data="data[indextr].competences">
             {{data[indextr].competences}}
+          </vs-td>
+           <vs-td :data="data[indextr].adresse">
+            {{data[indextr].adresse}}
           </vs-td>
 
            <vs-td :data="data[indextr].id">
@@ -103,6 +107,9 @@
 
 <script>
 import Popup from '../components/Popup.vue'
+import moment from 'moment';
+import read from '../composables/read'
+import create from "../composables/create"
 export default {
     name:"Candidat",
     components:{
@@ -111,32 +118,60 @@ export default {
     computed: {
       activePopup(){
         return this.$store.state.activePopup
+      },
+      candidats(){
+          return this.$store.state.candidats
       }
     },
-   
+     beforeMount(){
+     this.$store.dispatch("setShowMenu");
+     read("travails", (data)=>{
+        this.$store.dispatch("setJobs", data);
+      })
+
+      read("candidats", (data)=>{
+        this.$store.dispatch("setCandidats", data);
+      }) 
+      
+      read("entretiens", (data)=>{
+        this.$store.dispatch("setEntretiens", data);
+      })
+      console.log("haha")
+  },
     data() {
         return {
-            api_uri: process.env.VUE_APP_API_ROOTER,
-            candidats:[],
             nom:"",
             dateNais:"",
             email:"",
             contact:"",
             adresse:"",
             competence:"",
-            competences:[],
+            comps:[],
             submitError:false,
             message:'',
             popup_title:"Formulaire",
-            hideCloseBtn:true
+            hideCloseBtn:true,
+            moment:moment
         } 
     },
     methods:{
       handleSubmitData:function(){
-          console.log("handle submit data")
+          let candidat = {
+              "nomComplet": this.nom,
+              "dateNais": new Date(this.dateNais),
+              "adresse": this.adresse,
+              "competences": this.comps,
+              "contact": this.contact,
+              "email": this.email
+          }
+            console.log(candidat)
+            create("candidats", candidat, (response)=>{
+              console.log(response.data)
+            })
       },
-      addData:async function(){
-          console.log("add data")
+      addCompetence:function(){
+       this.comps.push(this.competence)
+       this.competence = ""
       },
       updateData: async function(){
           console.log("add data")
@@ -177,16 +212,21 @@ export default {
       closeAlert:function(){
         this.submitError= false;
       },
+       
        showNotification:function(titre, message, couleur){
            this.$vs.notify({title: titre,text:message,color:couleur})
-       }
+       },
+       
+       getCandidats : ()=>{
+        console.log("get candidats")       
+      }
 
     }
 }
 </script>
 <style>
 .content{
-    width: 50em;
+    width: 70em;
     margin: auto;
     font-size: 1.2em;
 }
@@ -195,6 +235,7 @@ export default {
       padding: 0.5em;
       font-weight: bold;
       font-size: 1.2em;
+      text-align: center;
   }  
 
  .popup-example .vs-input{
@@ -203,6 +244,11 @@ export default {
     margin-top: 5px;
     padding-left: 20%;
     padding-right: 20%;
+  }
+
+  .tr{
+    text-align: center;
+    font-family: Helvetica, sans-serif;
   }
 
 

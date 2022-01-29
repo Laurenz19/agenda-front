@@ -3,9 +3,9 @@
         <h1>Jobs</h1>
     <div class="jobs">
        <input type="text" placeholder="Add new Job" v-model="newJob" @keypress.enter="addJob">
-        <div  v-if="allJobs.length">
+        <div  v-if="jobs.length">
             <ul>
-                <li v-for="job in allJobs" :key="job.id" @click="deleteJob(job.id)">
+                <li v-for="job in jobs" :key="job.id" @click="deleteJob(job.id)">
                     {{job.description}}
                 </li>
             </ul>
@@ -17,23 +17,51 @@
     </div>
 </template>
 <script>
+import create from "../composables/create"
+import read from "../composables/read"
+import remove from "../composables/delete"
 export default {
     name:"Jobs",
     data(){
         return{
-            api_uri: process.env.VUE_APP_API_ROOTER,
             newJob:"",
-            allJobs:[]
+        }
+    },
+    beforeMount(){
+     this.$store.dispatch("setShowMenu");
+     read("travails", (data)=>{
+        this.$store.dispatch("setJobs", data);
+      })
 
+      read("candidats", (data)=>{
+        this.$store.dispatch("setCandidats", data);
+      }) 
+      
+      read("entretiens", (data)=>{
+        this.$store.dispatch("setEntretiens", data);
+      })
+      console.log("haha")
+  },
+    computed:{
+        jobs(){
+            return this.$store.state.jobs
         }
     },
     methods:{
         addJob(){
-            console.log("Adding a job")
+            this.$store.dispatch("appendJobs", {"description":this.newJob});
+            create("travails", {"description":this.newJob}, (response)=>{
+                console.log(response.status)
+            })
+            this.newJob =""
         },
 
         deleteJob(id){
             console.log(`delete this job id: ${id}`)
+            this.$store.dispatch("removeJob", id);
+            remove(`travails/${id}`, (status)=>{
+                console.log(status)
+            })
         }
     }
 }
@@ -60,7 +88,7 @@ export default {
         margin-bottom: 20px
     }
 
-    . ul{
+    .ul{
         position: relative;
         padding: 0;
     }

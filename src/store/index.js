@@ -7,6 +7,9 @@ export default new Vuex.Store({
   state: {
     showMenu:false,
     activePopup:false,
+    candidats:[],
+    entretiens:[],
+    jobs:[]
   },
   mutations: {
     setShowMenu(state){
@@ -18,6 +21,28 @@ export default new Vuex.Store({
     disablePopup(state){
       state.activePopup = false
     },
+    setCandidats(state, data){
+      state.candidats = data
+    },
+    setEntretiens(state, data){
+      state.entretiens = data
+    },
+    setJobs(state, data){
+      state.jobs = data
+    },
+    appendJobs(state, data){
+      state.jobs.push(data);
+    },
+    removeJob(state, id){
+      let data = []
+      state.jobs.forEach(elem => {
+        if(elem.id != id){
+          data.push(elem);
+        }
+      });
+
+      state.jobs = data;
+    }
   },
   actions: {
     setShowMenu({commit}){
@@ -29,6 +54,21 @@ export default new Vuex.Store({
     closePopup({commit}){
       commit('disablePopup')
     },
+    setCandidats({commit}, data){
+      commit('setCandidats', data)
+    },
+    setEntretiens({commit}, data){
+      commit('setEntretiens', data)
+    },
+    setJobs({commit}, data){
+      commit('setJobs', data)
+    },
+    appendJobs({commit}, data){
+      commit('appendJobs', data);
+    },
+    removeJob({commit}, id){
+      commit("removeJob", id)
+    }
   },
   modules: {
     

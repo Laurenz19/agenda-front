@@ -1,6 +1,6 @@
 <template>
    <div class="content">
-    <vs-table :notSpacer="true" pagination max-items="5" search :data="entretiens" vs-w="8">
+    <vs-table :notSpacer="true" pagination max-items="6" search :data="entretiens" vs-w="8">
       <template slot="header">
         <div class="popup">
            <app-pop-up :title="popup_title" :active="activePopup" @open="initPopup" :showbtn="true" :hideCloseBtn="hideCloseBtn">
@@ -29,6 +29,11 @@
              Job déscription
           </div>
         </vs-td>
+        <vs-td sort-key="job">
+          <div class="th">
+           Candidat
+          </div>
+        </vs-td>
         <vs-td sort-key="date">
            <div class="th">
              Date
@@ -51,13 +56,16 @@
         </vs-td>
       </template>
       <template slot-scope="{data}">
-        <vs-tr :key="data[indextr].id" v-for="(tr, indextr) in data" >
-          <vs-td :data="data[indextr].job">
-            {{data[indextr].job}}
+        <vs-tr  class="tr" :key="data[indextr].id" v-for="(tr, indextr) in data" >
+          <vs-td :data="data[indextr].travail">
+            {{data[indextr].travail.description}}
+          </vs-td>
+           <vs-td :data="data[indextr].candidat">
+            {{data[indextr].candidat.nomComplet}}
           </vs-td>
 
           <vs-td :data="data[indextr].date">
-            {{data[indextr].date}}
+            {{moment(data[indextr].date).format("DD-MM-YYYY")}}
           </vs-td>
           <vs-td :data="data[indextr].heure">
             {{data[indextr].heure}}
@@ -85,21 +93,39 @@
 
 <script>
 import Popup from '../components/Popup.vue'
+import moment from 'moment';
+import read from '../composables/read'
 export default {
-    name:"Candidat",
+    name:"Entretien",
     components:{
     'app-pop-up':Popup,
     },
     computed: {
       activePopup(){
         return this.$store.state.activePopup
+      },
+
+      entretiens(){
+          return this.$store.state.entretiens
       }
     },
-   
+     beforeMount(){
+     this.$store.dispatch("setShowMenu");
+     read("travails", (data)=>{
+        this.$store.dispatch("setJobs", data);
+      })
+
+      read("candidats", (data)=>{
+        this.$store.dispatch("setCandidats", data);
+      }) 
+      
+      read("entretiens", (data)=>{
+        this.$store.dispatch("setEntretiens", data);
+      })
+      console.log("haha")
+  },
     data() {
         return {
-            api_uri: process.env.VUE_APP_API_ROOTER,
-            entretiens:[],
             candidat:"",
             title:"",
             date:"",
@@ -108,7 +134,8 @@ export default {
             submitError:false,
             message:'',
             popup_title:"Formulaire",
-            hideCloseBtn:true
+            hideCloseBtn:true,
+            moment:moment
         } 
     },
     methods:{
@@ -164,5 +191,8 @@ export default {
 }
 </script>
 <style>
-
+  .tr{
+    text-align: center;
+    font-family: Helvetica, sans-serif;
+  }
 </style>
