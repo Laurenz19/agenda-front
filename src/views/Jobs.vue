@@ -103,6 +103,7 @@ export default {
         border-radius: 10px;
         width: 100%;
         box-sizing: border-box;
+        text-align: center;
     }
 
     .jobs li:hover{

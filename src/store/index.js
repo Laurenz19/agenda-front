@@ -42,6 +42,16 @@ export default new Vuex.Store({
       });
 
       state.jobs = data;
+    },
+    removeCandidat(state, id){
+      let data = []
+      state.candidats.forEach(elem => {
+        if(elem.id != id){
+          data.push(elem);
+        }
+      });
+
+      state.candidats = data;
     }
   },
   actions: {
@@ -68,6 +78,9 @@ export default new Vuex.Store({
     },
     removeJob({commit}, id){
       commit("removeJob", id)
+    },
+    removeCandidat({commit}, id){
+      commit("removeCandidat", id)
     }
   },
   modules: {

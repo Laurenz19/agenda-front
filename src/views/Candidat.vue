@@ -22,8 +22,8 @@
                       </div>
                     </div>
                     <div class="submit">
-                         <vs-button type="gradient" color="danger" @click="closePopup">Annuler</vs-button>
-                        <vs-button ref="btn_q" type="gradient" @click="handleSubmitData">Ajouter</vs-button>
+                        <vs-button type="gradient" color="danger" @click="closePopup">Annuler</vs-button>
+                        <vs-button ref="btn_submit" type="gradient" @click="handleSubmitData">Ajouter</vs-button>
                     </div>
                 </template>
           </app-pop-up>
@@ -91,10 +91,10 @@
            <vs-td :data="data[indextr].id">
              <vs-row vs-justify="center">
                 <vs-tooltip text="Editer">
-                  <vs-button size="small" type="gradient" icon="edit"></vs-button>
+                  <vs-button size="small" type="gradient" icon="edit" @click="updateData(data[indextr])"></vs-button>
                 </vs-tooltip>
                  <vs-tooltip text="Effacer">
-                  <vs-button size="small"  color="danger" type="gradient" icon="delete"></vs-button>
+                  <vs-button size="small"  color="danger" type="gradient" icon="delete" @click="deleteData(data[indextr].id)"></vs-button>
                 </vs-tooltip>
             </vs-row>
           </vs-td>
@@ -110,6 +110,8 @@ import Popup from '../components/Popup.vue'
 import moment from 'moment';
 import read from '../composables/read'
 import create from "../composables/create"
+import update from "../composables/update"
+import remove from "../composables/delete.js"
 export default {
     name:"Candidat",
     components:{
@@ -140,6 +142,7 @@ export default {
   },
     data() {
         return {
+            id:"",
             nom:"",
             dateNais:"",
             email:"",
@@ -164,41 +167,79 @@ export default {
               "contact": this.contact,
               "email": this.email
           }
-            console.log(candidat)
-            create("candidats", candidat, (response)=>{
+          if(this.$refs.btn_submit.$el.innerText == "Ajouter"){
+             create("candidats", candidat, (response)=>{
               console.log(response.data)
             })
+          }
+
+          if(this.$refs.btn_submit.$el.innerText == "Modifier"){
+            update(`candidats/${this.id}`, candidat, (response)=>{
+              console.log(response.data)
+              this.closePopup()
+               read("candidats", (data)=>{
+                this.$store.dispatch("setCandidats", data);
+              })
+           })
+          }
+            console.log(candidat)
       },
       addCompetence:function(){
        this.comps.push(this.competence)
        this.competence = ""
       },
-      updateData: async function(){
-          console.log("add data")
+      updateData: async function(candidat){
+           this.id = candidat.id
+           candidat.dateNais = moment(candidat.dateNais).format("YYYY-MM-DD")
+           this.$refs.btn_submit.$el.innerText = "Modifier"
+           this.$store.dispatch('openPopup')
+           this.initForm(candidat)
       },
       deleteData: function(id){
-        console.log(id);
+       remove(`candidats/${id}`, (status)=>{
+         console.log(status)
+         this.$store.dispatch('removeCandidat', id)
+          read("candidats", (data)=>{
+                this.$store.dispatch("setCandidats", data);
+          })
+       })
       },
       showUpdateForm:function(quartier){
          console.log(quartier);
       },
       closePopup:function(){
         this.$store.dispatch('closePopup')
-        this.initForm()
+        this.initForm( {
+              "nomComplet":"",
+              "dateNais":"",
+              "adresse": "",
+              "competences":"",
+              "contact":"",
+              "email":""
+          })
         this.showAlert(false)
       },
-      initForm:function(nom, adresse, contact, email, competences, dateNais){
-          this.nom = nom
-          this.adresse = adresse
-          this.contact = contact
-          this.email = email
-          this.competences = competences
-          this.dateNais = dateNais
+      initForm:function(candidat){
+          this.nom = candidat.nomComplet
+          this.adresse = candidat.adresse
+          this.contact = candidat.contact
+          this.email = candidat.email
+          this.comps = candidat.competences
+          this.dateNais = candidat.dateNais
       },
       initPopup:function(){
         console.log('hehe')
-        this.$refs.btn_q.$el.innerText="Ajouter"
-        this.initForm();
+        this.$refs.btn_submit.$el.innerText="Ajouter"
+        this.initForm(
+          {
+              "nomComplet":"",
+              "dateNais":"",
+              "adresse": "",
+              "competences":"",
+              "contact":"",
+              "email":""
+          }
+        );
         this.showAlert(false);
       },
       showAlert:function(state,message){
@@ -212,15 +253,9 @@ export default {
       closeAlert:function(){
         this.submitError= false;
       },
-       
        showNotification:function(titre, message, couleur){
            this.$vs.notify({title: titre,text:message,color:couleur})
        },
-       
-       getCandidats : ()=>{
-        console.log("get candidats")       
-      }
-
     }
 }
 </script>

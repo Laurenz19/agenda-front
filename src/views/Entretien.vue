@@ -195,4 +195,5 @@ export default {
     text-align: center;
     font-family: Helvetica, sans-serif;
   }
+ 
 </style>
